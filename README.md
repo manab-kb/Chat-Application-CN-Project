@@ -1,5 +1,5 @@
 # Chat-Application-CN-Project
-A Chat Application built using Python. Includes a Tkinter GUI. CN Project SEM-IV 2022.
+A Chat Application built using Python. Includes a Tkinter GUI.
 
 ## Project Topic: 
 
@@ -26,4 +26,5 @@ A Chat Application built using Python. Includes a Tkinter GUI. CN Project SEM-IV
 ## Team Members:
 - Manab Kumar Biswas (**PES2UG20CS185**)
 - Md Taseen Atehar (**PES2UG20CS191**)
----
+
+##  CN Project SEM-IV 2022.
