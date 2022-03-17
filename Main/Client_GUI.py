@@ -1,29 +1,26 @@
 import socket
 import tkinter as tk
-from tkinter import font
-from tkinter import ttk
 from tkinter import filedialog
 import time
 import threading
 import os
 
 class GUI:
-    
-    def __init__(self, ip_address, port):
-        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server.connect((ip_address, port))
+    def __init__(self, ipAddr, port):
+        self.serverSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.serverSocket.connect((ipAddr, port))
 
         self.Window = tk.Tk()
         self.Window.withdraw()
 
         self.login = tk.Toplevel()
 
-        self.login.title("Login")
+        self.login.title("Login/Sign Up")
         self.login.resizable(width=False, height=False)
         self.login.configure(width=400, height=350)
 
         self.pls = tk.Label(self.login, 
-                            text="Please Login to our chatroom", 
+                            text="Login to our Chat Room", 
                             justify=tk.CENTER,
                             font="Helvetica 12 bold")
 
@@ -36,7 +33,7 @@ class GUI:
         self.userEntryName.place(relwidth=0.4 ,relheight=0.1, relx=0.35, rely=0.30)
         self.userEntryName.focus()
 
-        self.roomLabelName = tk.Label(self.login, text="Room Id: ", font="Helvetica 12")
+        self.roomLabelName = tk.Label(self.login, text="Room ID: ", font="Helvetica 12")
         self.roomLabelName.place(relheight=0.2, relx=0.1, rely=0.40)
 
         self.roomEntryName = tk.Entry(self.login, font="Helvetica 11", show="*")
@@ -45,18 +42,18 @@ class GUI:
         self.go = tk.Button(self.login, 
                             text="ENTER", 
                             font="Helvetica 12 bold", 
-                            command = lambda: self.goAhead(self.userEntryName.get(), self.roomEntryName.get()))
+                            command = lambda: self.proceedUI(self.userEntryName.get(), self.roomEntryName.get()))
         
         self.go.place(relx=0.35, rely=0.62)
 
         self.Window.mainloop()
 
 
-    def goAhead(self, username, room_id=0):
+    def proceedUI(self, username, roomId=0):
         self.name = username
-        self.server.send(str.encode(username))
+        self.serverSocket.send(str.encode(username))
         time.sleep(0.1)
-        self.server.send(str.encode(room_id))
+        self.serverSocket.send(str.encode(roomId))
         
         self.login.destroy()
         self.layout()
@@ -126,12 +123,12 @@ class GUI:
         self.labelFile.place(relwidth = 1, 
 							    rely = 0.9) 
 		
-        self.fileLocation = tk.Label(self.labelFile, 
-                                text = "Choose file to send",
+        self.fileLoc = tk.Label(self.labelFile, 
+                                text = "Choose File to Send",
                                 bg = "#2C3E50", 
                                 fg = "#290054", 
                                 font = "Helvetica 11")
-        self.fileLocation.place(relwidth = 0.65, 
+        self.fileLoc.place(relwidth = 0.65, 
                                 relheight = 0.03, 
                                 rely = 0.008, 
                                 relx = 0.011) 
@@ -169,32 +166,32 @@ class GUI:
 
 
     def browseFile(self):
-        self.filename = filedialog.askopenfilename(initialdir="/", 
+        self.fileName = filedialog.askopenfilename(initialdir="/", 
                                     title="Select a file",
                                     filetypes = (("Text files", 
-                                                "*.txt*"), 
+                                                "*.txt*"),
                                                 ("all files", 
                                                 "*.*")))
-        self.fileLocation.configure(text="File Opened: "+ self.filename)
+        self.fileLoc.configure(text="File Selected: "+ self.fileName)
 
 
     def sendFile(self):
-        self.server.send("FILE".encode())
+        self.serverSocket.send("FILE".encode())
         time.sleep(0.1)
-        self.server.send(str("client_" + os.path.basename(self.filename)).encode())
+        self.serverSocket.send(str("client_" + os.path.basename(self.fileName)).encode())
         time.sleep(0.1)
-        self.server.send(str(os.path.getsize(self.filename)).encode())
+        self.serverSocket.send(str(os.path.getsize(self.fileName)).encode())
         time.sleep(0.1)
 
-        file = open(self.filename, "rb")
+        file = open(self.fileName, "rb")
         data = file.read(1024)
         while data:
-            self.server.send(data)
+            self.serverSocket.send(data)
             data = file.read(1024)
         self.textCons.config(state=tk.DISABLED)
         self.textCons.config(state = tk.NORMAL)
-        self.textCons.insert(tk.END, "<You> "
-                                     + str(os.path.basename(self.filename)) 
+        self.textCons.insert(tk.END, " [ You ] "
+                                     + str(os.path.basename(self.fileName)) 
                                      + " Sent\n\n")
         self.textCons.config(state = tk.DISABLED) 
         self.textCons.see(tk.END)
@@ -211,26 +208,26 @@ class GUI:
     def receive(self):
         while True:
             try:
-                message = self.server.recv(1024).decode()
+                message = self.serverSocket.recv(1024).decode()
 
                 if str(message) == "FILE":
-                    file_name = self.server.recv(1024).decode()
-                    lenOfFile = self.server.recv(1024).decode()
-                    send_user = self.server.recv(1024).decode()
+                    fileName = self.serverSocket.recv(1024).decode()
+                    fileLen = self.serverSocket.recv(1024).decode()
+                    user = self.serverSocket.recv(1024).decode()
 
-                    if os.path.exists(file_name):
-                        os.remove(file_name)
+                    if os.path.exists(fileName):
+                        os.remove(fileName)
 
                     total = 0
-                    with open(file_name, 'wb') as file:
-                        while str(total) != lenOfFile:
-                            data = self.server.recv(1024)
+                    with open(fileName, 'wb') as file:
+                        while str(total) != fileLen:
+                            data = self.serverSocket.recv(1024)
                             total = total + len(data)     
                             file.write(data)
                     
                     self.textCons.config(state=tk.DISABLED)
                     self.textCons.config(state = tk.NORMAL)
-                    self.textCons.insert(tk.END, "<" + str(send_user) + "> " + file_name + " Received\n\n")
+                    self.textCons.insert(tk.END, " [ " + str(user) + " ] " + fileName + " Received\n\n")
                     self.textCons.config(state = tk.DISABLED) 
                     self.textCons.see(tk.END)
 
@@ -245,24 +242,21 @@ class GUI:
 
             except: 
                 print("An error occured!") 
-                self.server.close() 
+                self.serverSocket.close() 
                 break
 
     def sendMessage(self):
         self.textCons.config(state=tk.DISABLED) 
         while True:  
-            self.server.send(self.msg.encode())
+            self.serverSocket.send(self.msg.encode())
             self.textCons.config(state = tk.NORMAL)
             self.textCons.insert(tk.END, 
-                            "<You> " + self.msg + "\n\n") 
+                            " [ You ] " + self.msg + "\n\n") 
 
             self.textCons.config(state = tk.DISABLED) 
             self.textCons.see(tk.END)
             break
 
-
-
-if __name__ == "__main__":
-    ip_address = "127.0.0.1"
-    port = 12345
-    g = GUI(ip_address, port)
+ipAddr = "127.0.0.1"
+port = 10000
+g = GUI(ipAddr, port)
