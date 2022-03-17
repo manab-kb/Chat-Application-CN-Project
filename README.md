@@ -27,4 +27,9 @@ A Chat Application built using Python. Includes a Tkinter GUI.
 - Manab Kumar Biswas (**PES2UG20CS185**)
 - Md Taseen Atehar (**PES2UG20CS191**)
 
+## Usage:
+1. Navigate to **Main**->**[Scripts](https://github.com/Manab784/Chat-Application-CN-Project/tree/main/Main/Scripts)**.
+2. Run **Script** to create an instance of a **Single** Client and a Server.
+3. To create further clients, run **clientScript**.
+
 ##  CN Project SEM-IV 2022.
